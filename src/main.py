@@ -77,6 +77,15 @@ def config_copy(config):
     else:
         return deepcopy(config)
 
+   
+def parse_command(params, key, default):
+    result = default
+    for _i, _v in enumerate(params):
+        if _v.split("=")[0].strip() == key:
+            result = _v[_v.index('=')+1:].strip()
+            break
+    return result
+
 
 if __name__ == '__main__':
     params = deepcopy(sys.argv)
@@ -131,6 +140,7 @@ if __name__ == '__main__':
             map_name = param.split("=")[1]
 
     # Save to disk by default for sacred
+    results_path = parse_command(params, "local_results_path", config_dict['local_results_path'])
     logger.info("Saving to FileStorageObserver in results/sacred.")
     # file_obs_path = os.path.join(results_path, f"sacred/{config_dict['name']}/{map_name}")
     file_obs_path = os.path.join(results_path, f"sacred/{map_name}/{config_dict['name']}")
