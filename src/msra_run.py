@@ -133,6 +133,9 @@ def msra_run(_run, _config, _log):
         with open(os.path.join(tb_exp_direc, "config.json"), "w") as f:
             f.write(config_str)
 
+    if args.use_wandb:
+        logger.setup_wandb(args, map_name)
+        
     if args.test_encoder:
         result_save_direc = os.path.join(
             dirname(dirname(abspath(__file__))), "results", "recons_logs", args.env, map_name, f"{_config['name']}_{remark_str}",

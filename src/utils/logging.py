@@ -1,6 +1,7 @@
 from collections import defaultdict
 import logging
 import numpy as np
+import wandb
 
 class Logger:
     def __init__(self, console_logger):
@@ -9,6 +10,7 @@ class Logger:
         self.use_tb = False
         self.use_sacred = False
         self.use_hdf = False
+        self.use_wandb = False
 
         self.stats = defaultdict(lambda: [])
 
@@ -23,6 +25,16 @@ class Logger:
         self._run_obj = sacred_run_dict
         self.sacred_info = sacred_run_dict.info
         self.use_sacred = True
+
+    def setup_wandb(self, config, map_name):
+        wandb.init(project=config.project, entity=config.entity, group=map_name, name=config.unique_token, config=config.__dict__)
+        wandb.config = config
+        # setup a custom step metric so that we can track
+        # environment steps instead of wandb internal episodes
+        wandb.define_metric("train/step")
+        wandb.define_metric("train/*", step_metric="train/step")
+        wandb.define_metric("test/*", step_metric="train/step")
+        self.use_wandb = True
 
     def log_stat(self, key, value, t, to_sacred=True):
         self.stats[key].append((t, value))
@@ -39,6 +51,15 @@ class Logger:
                 self.sacred_info[key] = [value]
             
             self._run_obj.log_scalar(key, value, t)
+
+        if self.use_wandb:
+            # modify the key to fit with the wandb convention
+            if not key.startswith("test_"):
+                key = "train/" + key
+            else:
+                key = key[len("test_"):]
+                key = "test/" + key
+            wandb.log({key: value, "train/step": t})
 
     def print_recent_stats(self):
         log_str = "Recent Stats | t_env: {:>10} | Episode: {:>8}\n".format(*self.stats["episode"][-1])
