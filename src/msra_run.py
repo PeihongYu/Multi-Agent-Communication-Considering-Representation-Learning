@@ -101,12 +101,16 @@ def msra_run(_run, _config, _log):
         map_name = _config["env_args"]["map_name"]
     except:
         map_name = _config["env_args"]["key"]
-    unique_token = f"{_config['name']}_seed{_config['seed']}_{map_name}_{datetime.datetime.now()}"
+    # unique_token = f"{_config['name']}_seed{_config['seed']}_{map_name}_{datetime.datetime.now()}"
+    unique_token = f"{_config['name']}_{map_name}_seed{_config['seed']}_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
 
     args.unique_token = unique_token
     if args.use_tensorboard:
+        # tb_logs_direc = os.path.join(
+        #     dirname(dirname(abspath(__file__))), "results", "tb_logs", args.env, map_name, f"{_config['name']}_{remark_str}",
+        # )
         tb_logs_direc = os.path.join(
-            dirname(dirname(abspath(__file__))), "results", "tb_logs", args.env, map_name, f"{_config['name']}_{remark_str}",
+            args.local_results_path, "tb_logs", args.env, map_name
         )
         tb_exp_direc = os.path.join(tb_logs_direc, "{}").format(unique_token)
         logger.setup_tb(tb_exp_direc)
@@ -348,8 +352,11 @@ def run_sequential(args, logger):
                 map_name = args.env_args["map_name"]
             except:
                 map_name = args.env_args["key"]
+            # save_path = os.path.join(
+            #     args.local_results_path, "models", args.env, map_name, f"{args.name}_{remark_str}", args.unique_token, str(runner.t_env)
+            # )
             save_path = os.path.join(
-                args.local_results_path, "models", args.env, map_name, f"{args.name}_{remark_str}", args.unique_token, str(runner.t_env)
+                args.local_results_path, "models", args.env, map_name, args.unique_token, str(runner.t_env)
             )
             # "results/models/{}".format(unique_token)
             os.makedirs(save_path, exist_ok=True)

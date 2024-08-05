@@ -1,6 +1,7 @@
 from functools import partial
 import pretrained
-from smac.env import MultiAgentEnv, StarCraft2Env
+from envs.multiagentenv import MultiAgentEnv
+from smac_plus import StarCraft2Env
 import sys
 import os
 import gym
@@ -25,9 +26,11 @@ REGISTRY["hallway"] = partial(env_fn, env=Join1Env)
 REGISTRY["hallway_group"] = partial(env_fn, env=JoinNEnv)
 
 if sys.platform == "linux":
-    os.environ.setdefault(
-        "SC2PATH", os.path.join(os.getcwd(), "3rdparty", "StarCraftII")
-    )
+    os.environ.setdefault("SC2PATH",
+                          "/fs/nexus-scratch/peihong/3rdparty/StarCraftII_2410")
+    # os.environ.setdefault(
+    #     "SC2PATH", os.path.join(os.path.expanduser('~'), "3rdparty", "StarCraftII")
+    # )
 
 
 class TimeLimit(GymTimeLimit):

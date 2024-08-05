@@ -23,8 +23,9 @@ ex = Experiment("pymarl")
 ex.logger = logger
 ex.captured_out_filter = apply_backspaces_and_linefeeds
 
-results_path = os.path.join(dirname(dirname(abspath(__file__))), "results")
+# results_path = os.path.join(dirname(dirname(abspath(__file__))), "results")
 # results_path = "/home/ubuntu/data"
+results_path = "/fs/nexus-scratch/peihong/smac_results_2410"
 
 @ex.main
 def my_main(_run, _config, _log):
@@ -53,7 +54,7 @@ def _get_config(params, arg_name, subfolder):
     if config_name is not None:
         with open(os.path.join(os.path.dirname(__file__), "config", subfolder, "{}.yaml".format(config_name)), "r") as f:
             try:
-                config_dict = yaml.load(f)
+                config_dict = yaml.load(f, Loader=yaml.FullLoader)
             except yaml.YAMLError as exc:
                 assert False, "{}.yaml error: {}".format(config_name, exc)
         return config_dict
@@ -84,7 +85,7 @@ if __name__ == '__main__':
     # Get the defaults from default.yaml
     with open(os.path.join(os.path.dirname(__file__), "config", "default.yaml"), "r") as f:
         try:
-            config_dict = yaml.load(f)
+            config_dict = yaml.load(f, Loader=yaml.FullLoader)
         except yaml.YAMLError as exc:
             assert False, "default.yaml error: {}".format(exc)
 
@@ -131,7 +132,8 @@ if __name__ == '__main__':
 
     # Save to disk by default for sacred
     logger.info("Saving to FileStorageObserver in results/sacred.")
-    file_obs_path = os.path.join(results_path, f"sacred/{config_dict['name']}/{map_name}")
+    # file_obs_path = os.path.join(results_path, f"sacred/{config_dict['name']}/{map_name}")
+    file_obs_path = os.path.join(results_path, f"sacred/{map_name}/{config_dict['name']}")
 
     # ex.observers.append(MongoObserver(db_name="marlbench")) #url='172.31.5.187:27017'))
     ex.observers.append(FileStorageObserver.create(file_obs_path))
