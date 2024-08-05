@@ -2,6 +2,8 @@ from functools import partial
 import pretrained
 from envs.multiagentenv import MultiAgentEnv
 from smac_plus import StarCraft2Env
+from smacv2.env import StarCraft2Env as StarCraft2EnvV2
+from smacv2.env import StarCraftCapabilityEnvWrapper
 import sys
 import os
 import gym
@@ -22,6 +24,7 @@ from gym.spaces import flatdim
 from .traffic_junction import Traffic_JunctionEnv
 REGISTRY["traffic_junction"] = partial(env_fn, env=Traffic_JunctionEnv)
 REGISTRY["sc2"] = partial(env_fn, env=StarCraft2Env)
+REGISTRY["sc2wrapped"] = partial(env_fn, env=StarCraftCapabilityEnvWrapper)
 REGISTRY["hallway"] = partial(env_fn, env=Join1Env)
 REGISTRY["hallway_group"] = partial(env_fn, env=JoinNEnv)
 

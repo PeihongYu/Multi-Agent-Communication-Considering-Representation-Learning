@@ -22,6 +22,17 @@ from components.transforms import OneHot
 
 import numpy as np
 
+def get_smacv2_map_name(_config):
+    map_name = _config["map_name"].split("_")[1]
+    n_units = _config["capability_config"]["n_units"]
+    n_enemies = _config["capability_config"]["n_enemies"]
+    sr = _config["sight_range_ratio"]
+    map_name = f"{map_name}_{n_units}_vs_{n_enemies}_sr{sr}"
+    epo = _config.get("prob_obs_enemy")
+    if epo is not None:
+        map_name += f"_epo{epo}"
+    return map_name
+
 def msra_run(_run, _config, _log):
 
     # check args sanity
@@ -99,6 +110,8 @@ def msra_run(_run, _config, _log):
 
     try:
         map_name = _config["env_args"]["map_name"]
+        if "10gen_" in map_name:
+            map_name = get_smacv2_map_name(_config["env_args"])
     except:
         map_name = _config["env_args"]["key"]
     # unique_token = f"{_config['name']}_seed{_config['seed']}_{map_name}_{datetime.datetime.now()}"
@@ -350,6 +363,8 @@ def run_sequential(args, logger):
             remark_str = getattr(args, "remark", "NoRemark")
             try:
                 map_name = args.env_args["map_name"]
+                if "10gen_" in map_name:
+                    map_name = get_smacv2_map_name(args.env_args)
             except:
                 map_name = args.env_args["key"]
             # save_path = os.path.join(
