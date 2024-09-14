@@ -17,7 +17,7 @@ class MASIAAgent(nn.Module):
     def __init__(self, input_shape, args):
         super(MASIAAgent, self).__init__()
         self.args = args
-        self.raw_input_shape = self._get_input_shape(input_shape)
+        self.raw_input_shape, self.extra_input_shape = self._get_input_shape(input_shape)
 
         # define state estimator (observation integration function)
         state_dim = int(np.prod(args.state_shape))
@@ -56,9 +56,9 @@ class MASIAAgent(nn.Module):
         
         if self.args.concat_obs:
             self.ob_fc = nn.Linear(self.raw_input_shape, args.ob_embed_dim)
-            self.fc1 = nn.Linear(args.ob_embed_dim + self.latent_dim + args.n_agents, args.hidden_dim)
+            self.fc1 = nn.Linear(args.ob_embed_dim + self.latent_dim + self.extra_input_shape, args.hidden_dim)
         else:
-            self.fc1 = nn.Linear(self.latent_dim + args.n_agents, args.hidden_dim)
+            self.fc1 = nn.Linear(self.latent_dim + self.extra_input_shape, args.hidden_dim)
         
         if self.args.use_rnn:
             self.rnn = nn.GRUCell(args.hidden_dim, args.hidden_dim)
@@ -276,11 +276,14 @@ class MASIAAgent(nn.Module):
 
     def _get_input_shape(self, input_shape):
         """get raw env obs shape"""
+        extra_shape = 0
         if self.args.obs_last_action:
             input_shape -= self.args.n_actions
+            extra_shape += self.args.n_actions
         if self.args.obs_agent_id:
             input_shape -= self.args.n_agents
-        return input_shape
+            extra_shape += self.args.n_agents
+        return input_shape, extra_shape
 
 
 if __name__ == "__main__":
