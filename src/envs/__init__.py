@@ -29,8 +29,10 @@ REGISTRY["hallway"] = partial(env_fn, env=Join1Env)
 REGISTRY["hallway_group"] = partial(env_fn, env=JoinNEnv)
 
 if sys.platform == "linux":
-    os.environ.setdefault("SC2PATH",
-                          "/fs/nexus-scratch/peihong/3rdparty/StarCraftII_2410")
+    if os.getenv("SC2PATH") is None:
+        print("SC2PATH not set, setting default path")
+        os.environ.setdefault("SC2PATH", "/fs/nexus-scratch/peihong/3rdparty/StarCraftII_2410")
+    print("SC2PATH: ", os.getenv("SC2PATH"))
     # os.environ.setdefault(
     #     "SC2PATH", os.path.join(os.path.expanduser('~'), "3rdparty", "StarCraftII")
     # )

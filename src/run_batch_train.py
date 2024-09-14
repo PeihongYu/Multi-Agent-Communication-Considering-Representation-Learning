@@ -5,51 +5,53 @@ from types import SimpleNamespace as SN
 
 
 # Define the maximum number of jobs for each account
-# max_job_nums = [4, 2, 2, 8]
-max_job_nums = [2]
+max_job_nums = [4, 2, 2, 2]
 account_combinations = [
-    # ["nexus", "tron", "medium"],      # 2 days, for qmix, 4 jobs max
+    ["nexus", "tron", "medium"],      # 2 days, for qmix, 4 jobs max
     ["cml-tokekar", "cml-dpart", "cml-medium"],     # 3 days, for ippo/dm2, 2 jobs max
-    # ["cml-tokekar", "cml-dpart", "cml-high"],     # 1.5 days, for qmix, 2 jobs max
-    # ["cml-tokekar", "cml-dpart", "cml-high_long"],    # 14 days, for ippo/dm2, 8 jobs max, but actually 2 jobs max due to resources
+    ["cml-tokekar", "cml-dpart", "cml-high"],     # 1.5 days, for qmix, 2 jobs max
+    ["cml-tokekar", "cml-dpart", "cml-high_long"],    # 14 days, for ippo/dm2, 8 jobs max, but actually 2 jobs max due to resources
 ]
 
 # Define the parameters you want to iterate over
+# for smac
 # parameters = {
-#     "env": ["appleDoor_a", "centerSquare6x6_2a"], 
-#     "algo": ["mappo", "mappo_ns", "ippo", "ippo_ns", "qmix"],
-#     "lr": [0.0001, 0.00005, 0.00001], 
-#     "tau": [0.01, 200]
+#     "algo_name": ["masia"],
+#     "map_name": ['3s_vs_5z', 'bane_vs_hM', '1o_10b_vs_1r'],
+#     "seed": [112358, 1285842, 78590, 119527, 122529],
 # }
+
+# for smacv2
 parameters = {
-    "seed": [112358, 1285842, 78590, 119527, 122529],
-    # "seed": [1285842, 78590, 119527, 122529],
-    # "seed": [112358],
+    "algo_name": ["masia"],
+    "map_name": ["sc2_gen_terran"], #"sc2_gen_zerg", "sc2_gen_protoss", "sc2_gen_terran", "sc2_gen_protoss_epo", "sc2_gen_terran_epo", "sc2_gen_zerg_epo"],
+    "sight_range": [0.2, 1, 5],
+    "agent_num": [5, 10, 20],
+    "seed": [112358] #, 1285842, 78590, 119527, 122529],
 }
 
-root_dir = "/fs/nexus-scratch/peihong/smac_results_2410"
+root_dir = "/fs/nexus-projects/Guided_MARL/smacv2_masia_syed"
 smac_dir = "/fs/nexus-scratch/peihong/3rdparty/StarCraftII_2410"
+os.makedirs(f'{root_dir}/slurm_scripts', exist_ok=True)
+os.makedirs(f'{root_dir}/slurm_logs', exist_ok=True)
 
 param_names = list(parameters.keys())
 param_values = [v for v in parameters.values()]
 combinations = list(product(*param_values))
 
-algo_name = "masia"
-map_name = "1o_10b_vs_1r"
-# map_name = "3s_vs_5z"
-# map_name = "bane_vs_hM"
-# python_command = "python src/main.py --env-config=sc2 --config=default_ippo_5v6 --alg-config=ippo with env_args.map_name=5m_vs_6m rew_type='env' update_gail=False t_max=10050000 name='ippo'"
-python_command = f"python src/main.py --env-config=sc2 --config=masia with env_args.map_name={map_name} t_max=20050000 name='masia'"
-
-# python src/main.py --env-config=sc2 --config=masia with env_args.map_name=bane_vs_hM t_max=20050000 name='masia'
-
 # Iterate over parameter combinations
 jobs_num = 0
 for combo in combinations:
-    job_name = "__".join([f"{name}_{value}" for name, value in zip(param_names, combo)])
-    job_name = f"{algo_name}__{map_name}__{job_name}"
     param_dict = {key: value for key, value in zip(param_names, combo)}
     param = SN(**param_dict)
+
+    # for smac
+    # job_name = f"{param.algo_name}__{param.map_name}__seed_{param.seed}"
+    # python_command = f"python src/main.py --config={param.algo_name} --env-config=sc2 with env_args.map_name={param.map_name} t_max=10050000 seed={param.seed}"
+    
+    # for smacv2
+    job_name = f"{param.algo_name}__{param.map_name}__seed_{param.seed}_sr{param.sight_range}_{param.agent_num}_vs_{param.agent_num}"
+    python_command = f"python src/main.py --config={param.algo_name} --env-config={param.map_name} with env_args.sight_range_ratio={param.sight_range} env_args.capability_config.n_units={param.agent_num} env_args.capability_config.n_enemies={param.agent_num} t_max=10050000 seed={param.seed}"
 
     # get qos info
     remainder = jobs_num % sum(max_job_nums)
@@ -81,6 +83,7 @@ CONDA_BASE=$(conda info --base)
 source $CONDA_BASE/etc/profile.d/conda.sh
 conda activate marl
 export SC2PATH={smac_dir}
+echo "SC2PATH: $SC2PATH"
 
 # Your Python script with parameters
 srun bash -c "{python_command} seed={param.seed}"
@@ -97,3 +100,8 @@ srun bash -c "{python_command} seed={param.seed}"
     # Print the job submission info
     result = ", ".join([f"{name}: {value}" for name, value in zip(param_names, combo)])
     print(f'Job submitted for parameters: {result}')
+
+
+# commands to run in command line
+# python src/main.py --config=masia --env-config=sc2_gen_terran with env_args.sight_range_ratio=1 env_args.capability_config.n_units=20 env_args.capability_config.n_enemies=20 t_max=10050000 seed=112358
+# python src/main.py --config=masia --env-config=sc2 with env_args.map_name=3s_vs_5z t_max=10050000 seed=112358

@@ -25,7 +25,7 @@ ex.captured_out_filter = apply_backspaces_and_linefeeds
 
 # results_path = os.path.join(dirname(dirname(abspath(__file__))), "results")
 # results_path = "/home/ubuntu/data"
-results_path = "/fs/nexus-scratch/peihong/smac_results_2410"
+# results_path = "/fs/nexus-scratch/peihong/smac_results_2410"
 
 @ex.main
 def my_main(_run, _config, _log):

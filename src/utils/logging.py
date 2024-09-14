@@ -2,6 +2,7 @@ from collections import defaultdict
 import logging
 import numpy as np
 import wandb
+import os
 
 class Logger:
     def __init__(self, console_logger):
@@ -27,7 +28,9 @@ class Logger:
         self.use_sacred = True
 
     def setup_wandb(self, config, map_name):
-        wandb.init(project=config.project, entity=config.entity, group=map_name, name=config.unique_token, config=config.__dict__)
+        log_dir = os.path.join(config.local_results_path, "wandb")
+        os.makedirs(log_dir, exist_ok=True)
+        wandb.init(project=config.project, entity=config.entity, group=map_name, name=config.unique_token, config=config.__dict__, dir=log_dir)
         wandb.config = config
         # setup a custom step metric so that we can track
         # environment steps instead of wandb internal episodes
